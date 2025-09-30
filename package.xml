@@ -4,7 +4,7 @@
   <name>onboarding_project</name>
   <version>0.0.0</version>
   <description>Onboarding Project for MAGICC Lab</description>
-  <maintainer email=""></maintainer>
+  <maintainer email="jmoore53@byu.edu">Jacob</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
