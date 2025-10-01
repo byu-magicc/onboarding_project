@@ -32,8 +32,7 @@ install(
 
 install(PROGRAMS
   scripts/walls_sensor.py
-  DESTINATION lib/${PROJECT_NAME}
-)
+  DESTINATION lib/${PROJECT_NAME})
 
 
 if(BUILD_TESTING)
