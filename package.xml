@@ -7,6 +7,9 @@
   <maintainer email="jmoore53@byu.edu">Jacob</maintainer>
   <license>TODO: License declaration</license>
 
+  <depend>rclpy</depend>
+  <exec_depend>python3</exec_depend>
+
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <test_depend>ament_lint_auto</test_depend>

@@ -11,6 +11,9 @@ find_package(rclcpp REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 
+find_package(rclpy REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
 add_executable(rviz_hallway_publisher
   src/rviz_hallway_publisher.cpp)
 target_include_directories(rviz_hallway_publisher
@@ -27,6 +30,10 @@ install(
   DIRECTORY resource
   DESTINATION share/${PROJECT_NAME})
 
+install(PROGRAMS
+  scripts/walls_sensor.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 
 if(BUILD_TESTING)
