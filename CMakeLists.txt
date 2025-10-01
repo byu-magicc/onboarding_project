@@ -23,6 +23,10 @@ install(
   TARGETS rviz_hallway_publisher
   DESTINATION lib/${PROJECT_NAME})
 
+install(
+  DIRECTORY resource
+  DESTINATION share/${PROJECT_NAME})
+
 
 
 if(BUILD_TESTING)

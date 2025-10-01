@@ -19,9 +19,9 @@ public:
 
 private:
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr hallway_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr cosmo_pub_;
   Eigen::Vector2d last_second_point_right_{0.0, 0.0};
   Eigen::Vector2d last_second_point_left_{0.0, 0.0};
+  rclcpp::QoS qos_transient_local_20_;
 
   // Set up parameter handling
   OnSetParametersCallbackHandle::SharedPtr parameter_callback_handle_;
@@ -30,6 +30,7 @@ private:
   void declare_parameters();
 
   void create_and_publish_hallway();
+  void publish_model();
   Eigen::Vector2d move_second_up_or_down(Eigen::Vector2d line_dir, Eigen::Vector2d normal, double width);
 };
 

@@ -2,19 +2,20 @@
 
 namespace onboarding_project {
 
-RvizPublisher::RvizPublisher() : Node("rviz_hallway_publisher") {
+RvizPublisher::RvizPublisher() 
+  : Node("rviz_hallway_publisher")
+  , qos_transient_local_20_(20)
+{
   declare_parameters();
   parameter_callback_handle_ = this->add_on_set_parameters_callback(std::bind(
       &RvizPublisher::parameters_callback, this, std::placeholders::_1));
 
-  rclcpp::QoS qos_transient_local_20_(20);
   qos_transient_local_20_.transient_local();
   hallway_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
       "rviz/hallway", qos_transient_local_20_);
-  cosmo_pub_ =
-      this->create_publisher<visualization_msgs::msg::Marker>("rviz/mesh", 5);
 
   create_and_publish_hallway();
+  publish_model();
 }
 
 void RvizPublisher::declare_parameters() {
@@ -26,6 +27,9 @@ void RvizPublisher::declare_parameters() {
   this->declare_parameter("hallway_waypoints_x", std::vector<double>{2.0, 20.0, 20.0, 80.0, 80.0, 60.0});
   this->declare_parameter("hallway_waypoints_y", std::vector<double>{0.0, 0.0, -20.0, -20.0, -60.0, -60.0});
   this->declare_parameter("hallway_waypoints_z", std::vector<double>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+  this->declare_parameter("model_file", "resource/maeserstatue_small.stl");
+  this->declare_parameter("model_scale", 0.15);
+  this->declare_parameter("model_z_offset", 2.5);
 }
 
 rcl_interfaces::msg::SetParametersResult RvizPublisher::parameters_callback(
@@ -127,6 +131,36 @@ void RvizPublisher::create_and_publish_hallway() {
 Eigen::Vector2d RvizPublisher::move_second_up_or_down(Eigen::Vector2d line_dir, Eigen::Vector2d normal, double width) {
   Eigen::Vector2d result = line_dir.dot(normal) * line_dir * width;
   return result;
+}
+
+void RvizPublisher::publish_model() {
+  std::vector<double> xs = this->get_parameter("hallway_waypoints_x").as_double_array();
+  std::vector<double> ys = this->get_parameter("hallway_waypoints_y").as_double_array();
+  std::vector<double> zs = this->get_parameter("hallway_waypoints_z").as_double_array();
+
+  visualization_msgs::msg::Marker model;
+  model.header.frame_id = "world";
+  model.ns = "stl";
+  model.id = 0;
+  model.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
+  model.mesh_resource = "package://onboarding_project/" + this->get_parameter("model_file").as_string();
+  model.mesh_use_embedded_materials = false;
+  model.action = visualization_msgs::msg::Marker::ADD;
+  model.pose.position.x = xs.back();
+  model.pose.position.y = ys.back();
+  model.pose.position.z = zs.back() + this->get_parameter("model_z_offset").as_double();
+  model.pose.orientation.x = 0.0;
+  model.pose.orientation.y = 0.0;
+  model.pose.orientation.z = 0.0;
+  model.pose.orientation.w = 1.0;
+  model.scale.x = this->get_parameter("model_scale").as_double();
+  model.scale.y = this->get_parameter("model_scale").as_double();
+  model.scale.z = this->get_parameter("model_scale").as_double();
+  model.color.r = 0.67f;
+  model.color.g = 0.67f;
+  model.color.b = 0.67f;
+  model.color.a = 1.0;
+  hallway_pub_->publish(model);
 }
 
 } // namespace onboarding_project
