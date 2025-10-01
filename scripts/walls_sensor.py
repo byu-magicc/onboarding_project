@@ -24,18 +24,6 @@ class WallsSensor(Node):
     def __init__(self):
         super().__init__(NodeName)
         self.walls = []
-        # TEST
-        wmsg = WallsMsgType()
-        w = Wall(wmsg)
-        w.marker_id = -1
-        w.position.x = 11.
-        w.position.y = 0.
-        w.position.z = 0.
-        w.dimensions.x = 10.
-        w.dimensions.y = 10.
-        w.dimensions.z = 10.
-        self.walls.append(w)
-        # ENDTEST
         qos_profile = QoSProfile(
             depth=20,
             durability=QoSDurabilityPolicy.TRANSIENT_LOCAL
@@ -60,15 +48,18 @@ class WallsSensor(Node):
         for w in self.walls:
 
             # If wall in line of sight n/s
-            if (abs(y - w.position.y) < (w.dimensions.y / 2)) and (abs(z - w.position.z) < (w.dimensions.z / 2)):
+            if (abs(y - w.position.y) < (w.dimensions.y / 2)): # Infinite wall height
+            # if (abs(y - w.position.y) < (w.dimensions.y / 2)) and (abs(z - w.position.z) < (w.dimensions.z / 2)):
                 dn = (w.position.x - w.dimensions.x / 2) - x
                 ds = x - (w.position.x + w.dimensions.x / 2)
                 if dn > 0:
                     dist_north = min(dist_north, dn)
                 if ds > 0:
                     dist_south = min(dist_south, ds)
+
             # If wall in line of sight e/w
-            if (abs(x - w.position.x) < (w.dimensions.x / 2)) and (abs(z - w.position.z) < (w.dimensions.z / 2)):
+            if (abs(x - w.position.x) < (w.dimensions.x / 2)): # Infinite wall height
+            # if (abs(x - w.position.x) < (w.dimensions.x / 2)) and (abs(z - w.position.z) < (w.dimensions.z / 2)):
                 de = (w.position.y - w.dimensions.y / 2) - y
                 dw = y - (w.position.y + w.dimensions.y / 2)
                 if de > 0:
