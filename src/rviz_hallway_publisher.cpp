@@ -2,63 +2,34 @@
 
 namespace onboarding_project {
 
-RvizPublisher::RvizPublisher() : Node("rviz_hallway_publisher") {
+RvizPublisher::RvizPublisher() 
+  : Node("rviz_hallway_publisher")
+  , qos_transient_local_20_(20)
+{
   declare_parameters();
   parameter_callback_handle_ = this->add_on_set_parameters_callback(std::bind(
       &RvizPublisher::parameters_callback, this, std::placeholders::_1));
 
-  rclcpp::QoS qos_transient_local_20_(20);
   qos_transient_local_20_.transient_local();
-  rviz_wp_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
-      "rviz/waypoint", qos_transient_local_20_);
-  rviz_mesh_pub_ =
-      this->create_publisher<visualization_msgs::msg::Marker>("rviz/mesh", 5);
-  rviz_aircraft_path_pub_ =
-      this->create_publisher<visualization_msgs::msg::Marker>("rviz/mesh_path",
-                                                              5);
+  hallway_pub_ = this->create_publisher<visualization_msgs::msg::Marker>(
+      "rviz/hallway", qos_transient_local_20_);
 
-  vehicle_state_sub_ = this->create_subscription<rosflight_msgs::msg::SimState>(
-      "sim/truth_state", 10,
-      std::bind(&RvizPublisher::state_update_callback, this,
-                std::placeholders::_1));
-
-  aircraft_tf2_broadcaster_ =
-      std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-
-  // Initialize aircraft
-  aircraft_.header.frame_id = "stl_frame";
-  aircraft_.ns = "vehicle";
-  aircraft_.id = 0;
-  aircraft_.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
-  aircraft_.mesh_resource =
-      "package://rosflight_sim/" +
-      this->get_parameter("sim_aircraft_file").as_string();
-  aircraft_.mesh_use_embedded_materials = false;
-  aircraft_.action = visualization_msgs::msg::Marker::ADD;
-  aircraft_.pose.position.x = 0.0;
-  aircraft_.pose.position.y = 0.0;
-  aircraft_.pose.position.z = 0.0;
-  aircraft_.pose.orientation.x = 0.0;
-  aircraft_.pose.orientation.y = 0.0;
-  aircraft_.pose.orientation.z = 0.0;
-  aircraft_.pose.orientation.w = 1.0;
-  aircraft_.scale.x = this->get_parameter("aircraft_scale").as_double();
-  aircraft_.scale.y = this->get_parameter("aircraft_scale").as_double();
-  aircraft_.scale.z = this->get_parameter("aircraft_scale").as_double();
-  aircraft_.color.r = 0.67f;
-  aircraft_.color.g = 0.67f;
-  aircraft_.color.b = 0.67f;
-  aircraft_.color.a = 1.0;
-  rviz_mesh_pub_->publish(aircraft_);
-
-  i_ = 0;
+  create_and_publish_hallway();
+  publish_model();
 }
 
 void RvizPublisher::declare_parameters() {
-  this->declare_parameter("sim_aircraft_file", "common_resource/skyhunter.dae");
-  this->declare_parameter("aircraft_scale", 5.0);
-  this->declare_parameter("path_publish_modulo", 10);
-  this->declare_parameter("max_path_history", 10000);
+  this->declare_parameter("cosmo_file", "resource/cosmo.dae");
+  this->declare_parameter("hallway_color", std::vector<double>{0.0, 1.0, 0.0, 1.0});
+  this->declare_parameter("hallway_width", 5.0);
+  this->declare_parameter("hallway_height", 10.0);
+  this->declare_parameter("wall_width", 5.0);
+  this->declare_parameter("hallway_waypoints_x", std::vector<double>{2.0, 20.0, 20.0, 80.0, 80.0, 60.0});
+  this->declare_parameter("hallway_waypoints_y", std::vector<double>{0.0, 0.0, -20.0, -20.0, -60.0, -60.0});
+  this->declare_parameter("hallway_waypoints_z", std::vector<double>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+  this->declare_parameter("model_file", "resource/maeserstatue_small.stl");
+  this->declare_parameter("model_scale", 0.15);
+  this->declare_parameter("model_z_offset", 2.5);
 }
 
 rcl_interfaces::msg::SetParametersResult RvizPublisher::parameters_callback(
@@ -67,78 +38,129 @@ rcl_interfaces::msg::SetParametersResult RvizPublisher::parameters_callback(
   result.successful = true;
   result.reason = "success";
 
-  for (auto param : parameters) {
-    if (param.get_name() == "aircraft_scale") {
-      aircraft_.scale.x = param.as_double();
-      aircraft_.scale.y = param.as_double();
-      aircraft_.scale.z = param.as_double();
-    }
-  }
+  // TODO: Create and publish hallway
+  // TODO: Clear all waypoint
 
   return result;
 }
 
-void RvizPublisher::update_aircraft_history() {
-  rclcpp::Time now = this->get_clock()->now();
-  aircraft_history_.header.stamp = now;
-  aircraft_history_.header.frame_id = "NED";
-  aircraft_history_.ns = "vehicle_path";
-  aircraft_history_.id = 0;
-  aircraft_history_.type = visualization_msgs::msg::Marker::LINE_STRIP;
-  aircraft_history_.action = visualization_msgs::msg::Marker::ADD;
-  aircraft_history_.scale.x = 1.0;
-  aircraft_history_.scale.y = 1.0;
-  aircraft_history_.scale.z = 1.0;
-  aircraft_history_.color.r = 0.0f;
-  aircraft_history_.color.g = 0.0f;
-  aircraft_history_.color.b = 0.0f;
-  aircraft_history_.color.a = 1.0;
-  aircraft_history_.points = aircraft_history_points_;
+void RvizPublisher::create_and_publish_hallway() {
+  std::vector<double> xs = this->get_parameter("hallway_waypoints_x").as_double_array();
+  std::vector<double> ys = this->get_parameter("hallway_waypoints_y").as_double_array();
+  std::vector<double> zs = this->get_parameter("hallway_waypoints_z").as_double_array();
+  std::vector<double> color = this->get_parameter("hallway_color").as_double_array();
+  double wall_width = this->get_parameter("wall_width").as_double();
+  double hallway_width = this->get_parameter("hallway_width").as_double();
+  double hallway_height = this->get_parameter("hallway_height").as_double();
 
-  // Restrict length of history
-  if (aircraft_history_points_.size() >
-      (uint64_t)this->get_parameter("max_path_history").as_int()) {
-    aircraft_history_points_.erase(aircraft_history_points_.begin());
+  if (xs.size() != ys.size() || xs.size() != zs.size()) {
+    RCLCPP_ERROR(this->get_logger(), "Hallway waypoints are not the same length! Cannot create hallway");
+  }
+
+  for (std::size_t i=0; i<xs.size()-1; ++i) {
+    Eigen::Vector2d curr{xs[i], ys[i]};
+    Eigen::Vector2d next{xs[i+1], ys[i+1]};
+
+    Eigen::Vector2d line_dir{next[0] - curr[0], next[1] - curr[1]};
+    Eigen::Vector2d normal{-line_dir[1], line_dir[0]};
+
+    line_dir.normalize();
+    normal.normalize();
+
+    double move_width = (hallway_width + wall_width) / 2;
+    Eigen::Vector2d first_point = i > 0 ? last_second_point_left_ : curr + move_width * normal;
+    Eigen::Vector2d second_point = next + move_width * normal;
+
+    Eigen::Vector2d first_point_right = i > 0 ? last_second_point_right_ : curr - move_width * normal;
+    Eigen::Vector2d second_point_right = next - move_width * normal;
+
+    if (i < xs.size() - 2) {
+      Eigen::Vector2d next_next{xs[i+2], ys[i+2]};
+
+      Eigen::Vector2d line_dir_next{next_next[0] - next[0], next_next[1] - next[1]};
+      Eigen::Vector2d normal_next{-line_dir_next[1], line_dir_next[0]};
+
+      line_dir_next.normalize();
+      normal_next.normalize();
+
+      second_point += move_second_up_or_down(line_dir, normal_next, move_width);
+      second_point_right += move_second_up_or_down(line_dir, -1 * normal_next, move_width);
+
+      last_second_point_left_ = second_point;
+      last_second_point_right_ = second_point_right;
+
+      second_point += move_second_up_or_down(line_dir, line_dir, wall_width / 2);
+      second_point_right += move_second_up_or_down(line_dir, line_dir, wall_width / 2);
+    }
+
+    Eigen::Vector2d left_wall_center = (first_point + second_point) / 2;
+    Eigen::Vector2d right_wall_center = (first_point_right + second_point_right) / 2;
+
+    visualization_msgs::msg::Marker hallway;
+    hallway.header.frame_id = "world"; // TODO: Check this
+    hallway.ns = "hallway";
+    hallway.id = i;
+    hallway.type = visualization_msgs::msg::Marker::CUBE;
+    hallway.action = visualization_msgs::msg::Marker::ADD;
+    hallway.pose.position.x = left_wall_center[0];
+    hallway.pose.position.y = left_wall_center[1];
+    hallway.pose.position.z = (zs[i] + zs[i+1] + hallway_height) / 2.0;
+    hallway.pose.orientation.x = 0.0;
+    hallway.pose.orientation.y = 0.0;
+    hallway.pose.orientation.z = 0.0;
+    hallway.pose.orientation.w = 1.0;
+    hallway.scale.x = std::max(std::abs(second_point[0] - first_point[0]), wall_width);
+    hallway.scale.y = std::max(std::abs(second_point[1] - first_point[1]), wall_width);
+    hallway.scale.z = hallway_height;
+    hallway.color.r = static_cast<float>(color[0]);
+    hallway.color.g = static_cast<float>(color[1]);
+    hallway.color.b = static_cast<float>(color[2]);
+    hallway.color.a = static_cast<float>(color[3]);
+    hallway_pub_->publish(hallway);
+
+    visualization_msgs::msg::Marker hallway_right = hallway;
+    hallway_right.id = i + xs.size();
+    hallway_right.pose.position.x = right_wall_center[0];
+    hallway_right.pose.position.y = right_wall_center[1];
+    hallway_right.scale.x = std::max(std::abs(second_point_right[0] - first_point_right[0]), wall_width);
+    hallway_right.scale.y = std::max(std::abs(second_point_right[1] - first_point_right[1]), wall_width);
+    hallway_pub_->publish(hallway_right);
   }
 }
 
-void RvizPublisher::update_mesh() {
-  rclcpp::Time now = this->get_clock()->now();
-  aircraft_.header.stamp = now;
-
-  geometry_msgs::msg::TransformStamped t;
-  t.header.stamp = now;
-  t.header.frame_id = "NED";
-  t.child_frame_id = "aircraft_body";
-  t.transform.translation.x = vehicle_state_.pose.position.x;
-  t.transform.translation.y = vehicle_state_.pose.position.y;
-  t.transform.translation.z = vehicle_state_.pose.position.z;
-
-  t.transform.rotation.x = vehicle_state_.pose.orientation.x;
-  t.transform.rotation.y = vehicle_state_.pose.orientation.y;
-  t.transform.rotation.z = vehicle_state_.pose.orientation.z;
-  t.transform.rotation.w = vehicle_state_.pose.orientation.w;
-
-  // Update aircraft history
-  if (i_ % this->get_parameter("path_publish_modulo").as_int() == 0) {
-    geometry_msgs::msg::Point new_p;
-    new_p.x = vehicle_state_.pose.position.x;
-    new_p.y = vehicle_state_.pose.position.y;
-    new_p.z = vehicle_state_.pose.position.z;
-    aircraft_history_points_.push_back(new_p);
-    update_aircraft_history();
-
-    rviz_aircraft_path_pub_->publish(aircraft_history_);
-  }
-
-  aircraft_tf2_broadcaster_->sendTransform(t);
-  rviz_mesh_pub_->publish(aircraft_);
+Eigen::Vector2d RvizPublisher::move_second_up_or_down(Eigen::Vector2d line_dir, Eigen::Vector2d normal, double width) {
+  Eigen::Vector2d result = line_dir.dot(normal) * line_dir * width;
+  return result;
 }
 
-void RvizPublisher::state_update_callback(
-    const rosflight_msgs::msg::SimState &msg) {
-  vehicle_state_ = msg;
-  update_mesh();
+void RvizPublisher::publish_model() {
+  std::vector<double> xs = this->get_parameter("hallway_waypoints_x").as_double_array();
+  std::vector<double> ys = this->get_parameter("hallway_waypoints_y").as_double_array();
+  std::vector<double> zs = this->get_parameter("hallway_waypoints_z").as_double_array();
+
+  visualization_msgs::msg::Marker model;
+  model.header.frame_id = "world";
+  model.ns = "stl";
+  model.id = 0;
+  model.type = visualization_msgs::msg::Marker::MESH_RESOURCE;
+  model.mesh_resource = "package://onboarding_project/" + this->get_parameter("model_file").as_string();
+  model.mesh_use_embedded_materials = false;
+  model.action = visualization_msgs::msg::Marker::ADD;
+  model.pose.position.x = xs.back();
+  model.pose.position.y = ys.back();
+  model.pose.position.z = zs.back() + this->get_parameter("model_z_offset").as_double();
+  model.pose.orientation.x = 0.0;
+  model.pose.orientation.y = 0.0;
+  model.pose.orientation.z = 0.0;
+  model.pose.orientation.w = 1.0;
+  model.scale.x = this->get_parameter("model_scale").as_double();
+  model.scale.y = this->get_parameter("model_scale").as_double();
+  model.scale.z = this->get_parameter("model_scale").as_double();
+  model.color.r = 0.67f;
+  model.color.g = 0.67f;
+  model.color.b = 0.67f;
+  model.color.a = 1.0;
+  hallway_pub_->publish(model);
 }
 
 } // namespace onboarding_project
@@ -146,7 +168,7 @@ void RvizPublisher::state_update_callback(
 int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<rosflight_sim::RvizPublisher>();
+  auto node = std::make_shared<onboarding_project::RvizPublisher>();
 
   rclcpp::spin(node);
 

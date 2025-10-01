@@ -7,9 +7,27 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+add_executable(rviz_hallway_publisher
+  src/rviz_hallway_publisher.cpp)
+target_include_directories(rviz_hallway_publisher
+   PRIVATE
+    include/rviz_hallway_publisher
+    ${EIGEN3_INCLUDE_DIRS})
+ament_target_dependencies(rviz_hallway_publisher rclcpp visualization_msgs Eigen3)
+target_link_libraries(rviz_hallway_publisher ${ament_LIBRARIES})
+install(
+  TARGETS rviz_hallway_publisher
+  DESTINATION lib/${PROJECT_NAME})
+
+install(
+  DIRECTORY resource
+  DESTINATION share/${PROJECT_NAME})
+
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
