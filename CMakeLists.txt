@@ -26,10 +26,13 @@ install(
   TARGETS rviz_hallway_publisher
   DESTINATION lib/${PROJECT_NAME})
 
+install(
+  DIRECTORY resource
+  DESTINATION share/${PROJECT_NAME})
+
 install(PROGRAMS
   scripts/walls_sensor.py
-  DESTINATION lib/${PROJECT_NAME}
-)
+  DESTINATION lib/${PROJECT_NAME})
 
 
 if(BUILD_TESTING)
