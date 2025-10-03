@@ -21,9 +21,9 @@ RvizPublisher::RvizPublisher()
 void RvizPublisher::declare_parameters() {
   this->declare_parameter("cosmo_file", "resource/cosmo.dae");
   this->declare_parameter("hallway_color", std::vector<double>{0.0, 1.0, 0.0, 0.4});
-  this->declare_parameter("hallway_width", 5.0);
+  this->declare_parameter("hallway_width", 10.0);
   this->declare_parameter("hallway_height", 10.0);
-  this->declare_parameter("wall_width", 5.0);
+  this->declare_parameter("wall_width", 2.0);
   this->declare_parameter("hallway_waypoints_x", std::vector<double>{2.0, 20.0, 20.0, 80.0, 80.0, 60.0});
   this->declare_parameter("hallway_waypoints_y", std::vector<double>{0.0, 0.0, -20.0, -20.0, -60.0, -60.0});
   this->declare_parameter("hallway_waypoints_z", std::vector<double>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
