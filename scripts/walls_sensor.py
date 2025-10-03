@@ -18,6 +18,8 @@ TruthTopicName = 'sim/truth_state'
 SensorMsgType = Float32MultiArray
 SensorTopicName = 'sensors/walls_sensor'
 
+drone_cylinder_radius = 1.
+
 
 class WallsSensor(Node):
 
@@ -43,15 +45,14 @@ class WallsSensor(Node):
         y = position.y
         z = position.z
 
-        # TODO: make inf?
-        dist_north, dist_east, dist_south, dist_west = 10000., 10000., 10000., 10000.
+        dist_north, dist_east, dist_south, dist_west = np.inf, np.inf, np.inf, np.inf
         for w in self.walls:
 
             # If wall in line of sight n/s
             if (abs(y - w.position.y) < (w.dimensions.y / 2)): # Infinite wall height
             # if (abs(y - w.position.y) < (w.dimensions.y / 2)) and (abs(z - w.position.z) < (w.dimensions.z / 2)):
-                dn = (w.position.x - w.dimensions.x / 2) - x
-                ds = x - (w.position.x + w.dimensions.x / 2)
+                dn = (w.position.x - w.dimensions.x / 2) - x - drone_cylinder_radius
+                ds = x - (w.position.x + w.dimensions.x / 2) - drone_cylinder_radius
                 if dn > 0:
                     dist_north = min(dist_north, dn)
                 if ds > 0:
@@ -60,8 +61,8 @@ class WallsSensor(Node):
             # If wall in line of sight e/w
             if (abs(x - w.position.x) < (w.dimensions.x / 2)): # Infinite wall height
             # if (abs(x - w.position.x) < (w.dimensions.x / 2)) and (abs(z - w.position.z) < (w.dimensions.z / 2)):
-                de = (w.position.y - w.dimensions.y / 2) - y
-                dw = y - (w.position.y + w.dimensions.y / 2)
+                de = (w.position.y - w.dimensions.y / 2) - y - drone_cylinder_radius
+                dw = y - (w.position.y + w.dimensions.y / 2) - drone_cylinder_radius
                 if de > 0:
                     dist_east = min(dist_east, de)
                 if dw > 0:
