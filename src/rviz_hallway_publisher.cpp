@@ -20,10 +20,10 @@ RvizPublisher::RvizPublisher()
 
 void RvizPublisher::declare_parameters() {
   this->declare_parameter("cosmo_file", "resource/cosmo.dae");
-  this->declare_parameter("hallway_color", std::vector<double>{0.0, 1.0, 0.0, 1.0});
-  this->declare_parameter("hallway_width", 5.0);
+  this->declare_parameter("hallway_color", std::vector<double>{0.0, 1.0, 0.0, 0.4});
+  this->declare_parameter("hallway_width", 10.0);
   this->declare_parameter("hallway_height", 10.0);
-  this->declare_parameter("wall_width", 5.0);
+  this->declare_parameter("wall_width", 2.0);
   this->declare_parameter("hallway_waypoints_x", std::vector<double>{2.0, 20.0, 20.0, 80.0, 80.0, 60.0});
   this->declare_parameter("hallway_waypoints_y", std::vector<double>{0.0, 0.0, -20.0, -20.0, -60.0, -60.0});
   this->declare_parameter("hallway_waypoints_z", std::vector<double>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
@@ -48,7 +48,6 @@ void RvizPublisher::create_and_publish_hallway() {
   std::vector<double> xs = this->get_parameter("hallway_waypoints_x").as_double_array();
   std::vector<double> ys = this->get_parameter("hallway_waypoints_y").as_double_array();
   std::vector<double> zs = this->get_parameter("hallway_waypoints_z").as_double_array();
-  std::vector<double> color = this->get_parameter("hallway_color").as_double_array();
   double wall_width = this->get_parameter("wall_width").as_double();
   double hallway_width = this->get_parameter("hallway_width").as_double();
   double hallway_height = this->get_parameter("hallway_height").as_double();
@@ -91,31 +90,23 @@ void RvizPublisher::create_and_publish_hallway() {
 
       second_point += move_second_up_or_down(line_dir, line_dir, wall_width / 2);
       second_point_right += move_second_up_or_down(line_dir, line_dir, wall_width / 2);
+    } else {
+      second_point += move_second_up_or_down(line_dir, line_dir, wall_width * 1.5);
+      second_point_right += move_second_up_or_down(line_dir, line_dir, wall_width * 1.5);
+      last_second_point_left_ = second_point;
+      last_second_point_right_ = second_point_right;
     }
 
     Eigen::Vector2d left_wall_center = (first_point + second_point) / 2;
     Eigen::Vector2d right_wall_center = (first_point_right + second_point_right) / 2;
 
-    visualization_msgs::msg::Marker hallway;
-    hallway.header.frame_id = "world"; // TODO: Check this
-    hallway.ns = "hallway";
+    visualization_msgs::msg::Marker hallway = create_default_hallway();
     hallway.id = i;
-    hallway.type = visualization_msgs::msg::Marker::CUBE;
-    hallway.action = visualization_msgs::msg::Marker::ADD;
     hallway.pose.position.x = left_wall_center[0];
     hallway.pose.position.y = left_wall_center[1];
     hallway.pose.position.z = (zs[i] + zs[i+1] + hallway_height) / 2.0;
-    hallway.pose.orientation.x = 0.0;
-    hallway.pose.orientation.y = 0.0;
-    hallway.pose.orientation.z = 0.0;
-    hallway.pose.orientation.w = 1.0;
     hallway.scale.x = std::max(std::abs(second_point[0] - first_point[0]), wall_width);
     hallway.scale.y = std::max(std::abs(second_point[1] - first_point[1]), wall_width);
-    hallway.scale.z = hallway_height;
-    hallway.color.r = static_cast<float>(color[0]);
-    hallway.color.g = static_cast<float>(color[1]);
-    hallway.color.b = static_cast<float>(color[2]);
-    hallway.color.a = static_cast<float>(color[3]);
     hallway_pub_->publish(hallway);
 
     visualization_msgs::msg::Marker hallway_right = hallway;
@@ -126,6 +117,58 @@ void RvizPublisher::create_and_publish_hallway() {
     hallway_right.scale.y = std::max(std::abs(second_point_right[1] - first_point_right[1]), wall_width);
     hallway_pub_->publish(hallway_right);
   }
+
+  add_back_wall();
+}
+
+visualization_msgs::msg::Marker RvizPublisher::create_default_hallway()
+{
+  std::vector<double> color = this->get_parameter("hallway_color").as_double_array();
+  double hallway_height = this->get_parameter("hallway_height").as_double();
+
+  visualization_msgs::msg::Marker hallway;
+  hallway.header.frame_id = "world"; // TODO: Check this
+  hallway.ns = "hallway";
+  hallway.type = visualization_msgs::msg::Marker::CUBE;
+  hallway.action = visualization_msgs::msg::Marker::ADD;
+  hallway.pose.orientation.x = 0.0;
+  hallway.pose.orientation.y = 0.0;
+  hallway.pose.orientation.z = 0.0;
+  hallway.pose.orientation.w = 1.0;
+  hallway.color.r = static_cast<float>(color[0]);
+  hallway.color.g = static_cast<float>(color[1]);
+  hallway.color.b = static_cast<float>(color[2]);
+  hallway.color.a = static_cast<float>(color[3]);
+  hallway.scale.z = hallway_height;
+
+  return hallway;
+}
+
+void RvizPublisher::add_back_wall()
+{
+  std::vector<double> xs = this->get_parameter("hallway_waypoints_x").as_double_array();
+  std::vector<double> zs = this->get_parameter("hallway_waypoints_z").as_double_array();
+  double wall_width = this->get_parameter("wall_width").as_double();
+  double hallway_width = this->get_parameter("hallway_width").as_double();
+  double hallway_height = this->get_parameter("hallway_height").as_double();
+
+  Eigen::Vector2d hall_point = (last_second_point_right_ + last_second_point_left_) / 2;
+
+  visualization_msgs::msg::Marker hallway = create_default_hallway();
+  hallway.id = 3*xs.size();
+  hallway.pose.position.x = hall_point[0];
+  hallway.pose.position.y = hall_point[1];
+  hallway.pose.position.z = (zs.back() + hallway_height) / 2.0;
+  if (last_second_point_right_[0] - last_second_point_left_[0] < 0.1) {
+    hallway.scale.x = wall_width;
+    hallway.scale.y = hallway_width + wall_width * 2;
+  } else {
+    hallway.scale.x = hallway_width + wall_width * 2;
+    hallway.scale.y = wall_width;
+  }
+
+  hallway.color.a = 0.4;
+  hallway_pub_->publish(hallway);
 }
 
 Eigen::Vector2d RvizPublisher::move_second_up_or_down(Eigen::Vector2d line_dir, Eigen::Vector2d normal, double width) {
