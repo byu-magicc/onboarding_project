@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import rclpy
 from rclpy.node import Node
@@ -20,8 +21,8 @@ SensorMsgType = Float32MultiArray
 SensorTopicName = 'sensors/walls_sensor'
 
 drone_cylinder_radius = 1.
-chalk_circle_radius = 3.
-
+chalk_circle_radius = 5.
+height_threshold = 10.
 
 class WallsSensor(Node):
 
@@ -78,19 +79,33 @@ class WallsSensor(Node):
                     dist_west = min(dist_west, dw)
 
         nesw = np.array([dist_north, dist_east, dist_south, dist_west], dtype=np.float32).tolist()
-        self.min_distance.append(min(nesw))
-        if self.check_if_reached_karl(position):
-            self.finished = True
+        if not self.finished:
+            elapsed_time = self.clock.now() - self.init_time
+            elapsed_time_sec = elapsed_time.to_msg().sec
+            elapsed_time_nano = elapsed_time.to_msg().nanosec
+            timestamp = float(elapsed_time_sec) + (elapsed_time_nano * 1e-9)
+            self.min_distance.append([timestamp, min(nesw)])
+            if self.check_if_reached_karl(position):
+                self.finished = True
+                self.get_logger().info('Karl has received the chalkolate milk!')
+                self.destroy_subscription(self.truth_state_sub)
+                min_distance_array = np.array(self.min_distance)
+                self.plot_distance_to_walls(min_distance_array)
+                plt.show()
         return nesw
 
     def check_if_reached_karl(self, position):
         if self.karl is None:
             return False
+        print(self.karl.position_array)
         position_array = np.array([position.x, position.y, position.z])
-        if (np.linalg.norm(self.karl.position_array[:2] - position_array[:2]) < chalk_circle_radius) and (abs(position.z - self.karl.position.z) < 2):
+        if (np.linalg.norm(self.karl.position_array[:2] - position_array[:2]) < chalk_circle_radius) and (abs(position.z - self.karl.position.z) < height_threshold):
             return True
         else:
             return False
+
+    def plot_distance_to_walls(self, min_distance_array):
+        plt.plot(min_distance_array[:, 0], min_distance_array[:, 1])
 
     def collect_markers(self, msg):
         m = PythonMarker(msg)
@@ -108,11 +123,16 @@ class PythonMarker():
     def set_msg_features(self, msg):
         self.marker_id = msg.id
         self.marker_type = msg.type
-        self.position = msg.pose.position
+        self.position = self.make_ned(msg.pose.position)
         self.position_array = np.array([self.position.x, self.position.y, self.position.z])
         self.orientation = msg.pose.orientation
         self.dimensions = msg.scale
         self.color = msg.color
+
+    def make_ned(self, position):
+        position.y *= -1
+        position.z *= -1
+        return position
 
     def __str__(self):
         to_print = ''
