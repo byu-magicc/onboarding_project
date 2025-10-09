@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
+from rclpy.clock import Clock
 
 from std_msgs.msg import Float32MultiArray
 from visualization_msgs.msg import Marker
@@ -18,17 +20,27 @@ TruthTopicName = 'sim/truth_state'
 SensorMsgType = Float32MultiArray
 SensorTopicName = 'sensors/walls_sensor'
 
+drone_cylinder_radius = 1.
+chalk_circle_radius = 5.
+height_threshold = 10.
 
 class WallsSensor(Node):
 
     def __init__(self):
         super().__init__(NodeName)
+        self.clock = self.get_clock()
+        self.init_time = self.clock.now()
+        self.min_distance = []
         self.walls = []
+        self.karl = None
+        self.finished = False
+        # Quality of service profile to collect walls
         qos_profile = QoSProfile(
             depth=20,
             durability=QoSDurabilityPolicy.TRANSIENT_LOCAL
         )
-        self.walls_loc_sub = self.create_subscription(WallsMsgType, WallsTopicName, self.set_walls, qos_profile)
+        # Publisher and subscribers
+        self.walls_loc_sub = self.create_subscription(WallsMsgType, WallsTopicName, self.collect_markers, qos_profile)
         self.truth_state_sub = self.create_subscription(TruthMsgType, TruthTopicName, self.truth_callback, 1)
         self.sensor_pub = self.create_publisher(SensorMsgType, SensorTopicName, 10)
 
@@ -43,15 +55,14 @@ class WallsSensor(Node):
         y = position.y
         z = position.z
 
-        # TODO: make inf?
-        dist_north, dist_east, dist_south, dist_west = 10000., 10000., 10000., 10000.
+        dist_north, dist_east, dist_south, dist_west = np.inf, np.inf, np.inf, np.inf
         for w in self.walls:
 
             # If wall in line of sight n/s
             if (abs(y - w.position.y) < (w.dimensions.y / 2)): # Infinite wall height
             # if (abs(y - w.position.y) < (w.dimensions.y / 2)) and (abs(z - w.position.z) < (w.dimensions.z / 2)):
-                dn = (w.position.x - w.dimensions.x / 2) - x
-                ds = x - (w.position.x + w.dimensions.x / 2)
+                dn = (w.position.x - w.dimensions.x / 2) - x - drone_cylinder_radius
+                ds = x - (w.position.x + w.dimensions.x / 2) - drone_cylinder_radius
                 if dn > 0:
                     dist_north = min(dist_north, dn)
                 if ds > 0:
@@ -60,36 +71,71 @@ class WallsSensor(Node):
             # If wall in line of sight e/w
             if (abs(x - w.position.x) < (w.dimensions.x / 2)): # Infinite wall height
             # if (abs(x - w.position.x) < (w.dimensions.x / 2)) and (abs(z - w.position.z) < (w.dimensions.z / 2)):
-                de = (w.position.y - w.dimensions.y / 2) - y
-                dw = y - (w.position.y + w.dimensions.y / 2)
+                de = (w.position.y - w.dimensions.y / 2) - y - drone_cylinder_radius
+                dw = y - (w.position.y + w.dimensions.y / 2) - drone_cylinder_radius
                 if de > 0:
                     dist_east = min(dist_east, de)
                 if dw > 0:
                     dist_west = min(dist_west, dw)
 
-        return np.array([dist_north, dist_east, dist_south, dist_west], dtype=np.float32).tolist()
+        nesw = np.array([dist_north, dist_east, dist_south, dist_west], dtype=np.float32).tolist()
+        if not self.finished:
+            self.min_distance.append([self.calc_time_passed(), min(nesw)])
+            if self.check_if_reached_karl(position):
+                self.finished = True
+                self.get_logger().info('Karl has received the chalkolate milk!')
+                self.destroy_subscription(self.truth_state_sub)
+                min_distance_array = np.array(self.min_distance)
+                self.plot_distance_to_walls(min_distance_array)
+        return nesw
 
-    def set_walls(self, msg):
-        w = Wall(msg)
-        self.walls.append(w)
-        self.walls = sorted(self.walls, key=lambda w: w.marker_id)
+    def calc_time_passed(self):
+        elapsed_time = self.clock.now() - self.init_time
+        elapsed_time_sec = elapsed_time.to_msg().sec
+        elapsed_time_nano = elapsed_time.to_msg().nanosec
+        timestamp = float(elapsed_time_sec) + (elapsed_time_nano * 1e-9)
+        return timestamp
 
-class Wall():
+    def check_if_reached_karl(self, position):
+        if self.karl is None:
+            return False
+        position_array = np.array([position.x, position.y, position.z])
+        if (np.linalg.norm(self.karl.position_array[:2] - position_array[:2]) < chalk_circle_radius) and (abs(position.z - self.karl.position.z) < height_threshold):
+            return True
+        else:
+            return False
+
+    def plot_distance_to_walls(self, min_distance_array):
+        plt.plot(min_distance_array[:, 0], min_distance_array[:, 1])
+        plt.title('Distance to Nearest Wall')
+        plt.show()
+
+    def collect_markers(self, msg):
+        m = PythonMarker(msg)
+        if msg.type == 1:
+            self.walls.append(m)
+            self.walls = sorted(self.walls, key=lambda w: w.marker_id)
+        elif msg.type == 10:
+            self.karl = m
+
+class PythonMarker():
 
     def __init__(self, msg):
         self.set_msg_features(msg)
-        self.calc_dimensions()
 
     def set_msg_features(self, msg):
         self.marker_id = msg.id
         self.marker_type = msg.type
-        self.position = msg.pose.position
+        self.position = self.make_ned(msg.pose.position)
+        self.position_array = np.array([self.position.x, self.position.y, self.position.z])
         self.orientation = msg.pose.orientation
         self.dimensions = msg.scale
         self.color = msg.color
 
-    def calc_dimensions(self):
-        pass
+    def make_ned(self, position):
+        position.y *= -1
+        position.z *= -1
+        return position
 
     def __str__(self):
         to_print = ''
