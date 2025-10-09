@@ -80,24 +80,25 @@ class WallsSensor(Node):
 
         nesw = np.array([dist_north, dist_east, dist_south, dist_west], dtype=np.float32).tolist()
         if not self.finished:
-            elapsed_time = self.clock.now() - self.init_time
-            elapsed_time_sec = elapsed_time.to_msg().sec
-            elapsed_time_nano = elapsed_time.to_msg().nanosec
-            timestamp = float(elapsed_time_sec) + (elapsed_time_nano * 1e-9)
-            self.min_distance.append([timestamp, min(nesw)])
+            self.min_distance.append([self.calc_time_passed(), min(nesw)])
             if self.check_if_reached_karl(position):
                 self.finished = True
                 self.get_logger().info('Karl has received the chalkolate milk!')
                 self.destroy_subscription(self.truth_state_sub)
                 min_distance_array = np.array(self.min_distance)
                 self.plot_distance_to_walls(min_distance_array)
-                plt.show()
         return nesw
+
+    def calc_time_passed(self):
+        elapsed_time = self.clock.now() - self.init_time
+        elapsed_time_sec = elapsed_time.to_msg().sec
+        elapsed_time_nano = elapsed_time.to_msg().nanosec
+        timestamp = float(elapsed_time_sec) + (elapsed_time_nano * 1e-9)
+        return timestamp
 
     def check_if_reached_karl(self, position):
         if self.karl is None:
             return False
-        print(self.karl.position_array)
         position_array = np.array([position.x, position.y, position.z])
         if (np.linalg.norm(self.karl.position_array[:2] - position_array[:2]) < chalk_circle_radius) and (abs(position.z - self.karl.position.z) < height_threshold):
             return True
@@ -106,6 +107,8 @@ class WallsSensor(Node):
 
     def plot_distance_to_walls(self, min_distance_array):
         plt.plot(min_distance_array[:, 0], min_distance_array[:, 1])
+        plt.title('Distance to Nearest Wall')
+        plt.show()
 
     def collect_markers(self, msg):
         m = PythonMarker(msg)
