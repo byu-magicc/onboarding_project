@@ -35,45 +35,8 @@ Avoid all walls.
 - The minimum distance to the walls from your run (produced by this package)
 - A link to your forked repository with your solution code
 
-## Project Instructions
+## Instructions
 
-> [!NOTE]
-> These instructions are intentionally left vague in some places.
-> This is because we want you to explore and learn, not just follow a tutorial.
-> Often, there will be a hint or a note about places to look, but we encourage you to
->   * Read the documentation
->   * Search on Stack Overflow
->   * Ask ChatGPT (but beware)
->
-> If you still are having issues, other students in the lab are willing to help!
-> We have all been where you are now. Please reach out.
-> Keep in mind that you'll have better outcomes if you do your homework first.
+1. Follow the [project instructions](docs/project-instructions.md) to complete your project.
+2. After successfully getting Mr. Maeser his goods, [submit your results to the leaderboard](docs/leaderboard-instructions.md).
 
-> [!WARNING]
-> ROS 2 really only plays nicely with Linux, or Windows running WSL.
-> If you are using a Windows machine, [install WSL and do all the following steps inside WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
-> Linux is an essential research tool. WSL will allow you to run Linux on Windows.
->
-> MacOS does not play nicely with ROS 2, especially not with GUIs with ROS 2 (not even with Docker).
-> Perhaps try to use a virtual machine, or get an account with a Linux-based lab computer.
-
-To complete this project, do the following:
-
-1. Install [ROS 2](https://docs.ros.org/en/jazzy/index.html) and set up [ROSflight](https://docs.rosflight.org/git-main/user-guide/installation/installation-sim/).
-  > [!TIP]
-  > Make sure to get familiar with what ROS 2 and ROSflight are, if you are unfamiliar with the projects. Information about both projects is found on the documentation links above.
-  >
-  > The [ROSflight docs](https://docs.rosflight.org/git-main/user-guide/overview) mention doing the ROS 2 tutorials.
-  > We recommend that you do these tutorials **simultaneously** with the ROSflight tutorials.
-  > This means you work on the ROSflight tutorials and do the ROS 2 tutorials for topics that you come across in the ROSflight tutorials.
-  > 
-  > Feel free to do as many ROS 2 tutorials as you want; they are all quite good.
-
-2. Go through the [ROSflight tutorials](https://docs.rosflight.org/git-main/user-guide/tutorials/tutorial-overview/). You can skip the "Transitioning from Sim to Hardware" tutorial.
-
-### Common issues:
-
-<details><summary><strong>Not seeing correct documentation?</strong></summary>
-Not seeing the correct documentation when you go to <href a=https://rosflight.org>https://rosflight.org</href>?
-Make sure you select the "git-main" branch at the top near the logo (not "v1.3").
-</details>
