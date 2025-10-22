@@ -57,7 +57,7 @@ This file defines a ROS 2 node (in C++) that creates and publishes the hallway v
 You should not have to do anything with this file or the associated `rviz_hallway_publisher.hpp` file.
 
 The `resource` directory contains an STL file for Mr. Maeser and an RViz configuration file.
-You will load this configuration file a little later (it defines some subscribers that you will need to visualize the hallways).
+You will load this configuration file a little later (it defines some ROS 2 subscribers that you will need to visualize the hallways).
 
 Everything else you need is in the `roscopter` and `rosflight_ros_pkgs` repos (already installed from steps 1-2).
 
@@ -110,9 +110,9 @@ If you put your ROS 2 node code in your forked version of this repository, build
 Follow the examples of the other nodes there.
 
 Once you add it to the `CMakeLists.txt` file, build it by navigating up to your `rosflight_ws`, and running `colcon build`.
-Remember to source your `install/setup.bash` script after you build!
+Remember to source your `install/setup.bash` script **in every terminal** after you build!
 
-Test that it runs by running
+Test that your node works by running this command):
 ```bash
 ros2 run onboarding_project <name_of_your_executable_OR_python_script>
 ```
@@ -121,7 +121,8 @@ ros2 run onboarding_project <name_of_your_executable_OR_python_script>
 
 Now that you have built your node, you can launch the ROSflight sim with the hallways and see it go!
 
-6. Launch the [multirotor ROSflight sim](https://docs.rosflight.org/git-main/user-guide/tutorials/setting-up-roscopter-in-sim/)
+6. Launch the multirotor ROSflight sim in one terminal and the ROScopter autonomy stack in another.
+Instructions on how to do both are found in the [multirotor ROSflight sim tutorial](https://docs.rosflight.org/git-main/user-guide/tutorials/setting-up-roscopter-in-sim/).
 
 7. Load the RViz config file to the RViz panel that just pulled up by going to `File > Open Config`. Select the `onboarding_project_rviz_config.rviz` file in the `resource` directory of this repository. Once you do this, you should see the hallways appear in RViz.
 
@@ -143,4 +144,4 @@ Not seeing the correct documentation when you go to <href a=https://rosflight.or
 Make sure you select the "git-main" branch at the top near the logo (not "v1.3").
 </details>
 
-If there is a common issue you feel should be listed here, please open an issue.
+If there is a common issue you feel should be listed here, please open a GitHub issue.
