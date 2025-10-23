@@ -42,13 +42,14 @@ Avoid all walls.
 
 ## Leaderboard
 Ranked list of successful solutions.
-Solutions are ranked by
-\[
-  \text{"Minimum Distance From Walls"} / \text{"Time"}
-\]
+Solutions are ranked by $\frac{\text{Minimum Distance From Walls}}{\text{Time}}$
 
 This means that a large minimum distance and a small time will result in a higher score.
 
 <!-- LEADERBOARD:START -->
 <!-- The leaderboard below is automatically generated. Do not edit manually. -->
+| Rank | Name | Minimum distance from walls (m) | Best time (s) | GitHub | Video Link |
+|------|------|------------------|----------------|---------|----------|
+| 1 | Cosmo | 2.0 | 177.2 | [repo](https://github.com/byu-magicc/onboarding_project) | [video](https://youtube.com) |
+
 <!-- LEADERBOARD:END -->

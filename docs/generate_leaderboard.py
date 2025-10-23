@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 RESULTS_PATH = Path("docs/leaderboard_results.json")
-LEADERBOARD_PATH = Path("README.md")
+README_PATH = Path("README.md")
 
 URL_PATTERN = re.compile(r"^https?://[^\s]+$")
 START_MARKER = "<!-- LEADERBOARD:START -->"
@@ -68,12 +68,6 @@ def main():
         if current_best is None:
             best_entries[name] = entry
         else:
-            # better = (
-            #     entry["minimum_dist_meters"] > current_best["minimum_dist_meters"]
-            # ) or (
-            #     entry["minimum_dist_meters"] == current_best["minimum_dist_meters"]
-            #     and entry["time_s"] < current_best["time_s"]
-            # )
             new_score = compute_score(entry["minimum_dist_meters"], entry["time_s"])
             old_score = compute_score(
                 current_best["minimum_dist_meters"], current_best["time_s"]
@@ -87,20 +81,37 @@ def main():
     )
 
     # Generate Markdown
-    md = [
-        "# 🧩 Maze Solver Leaderboard\n",
-        "| Rank | Name | Minimum distance from walls (m) | Best time_s (s) | GitHub | Video Link |",
+    leaderboard_lines = [
+        START_MARKER,
+        "<!-- The leaderboard below is automatically generated. Do not edit manually. -->",
+        "| Rank | Name | Minimum distance from walls (m) | Best time (s) | GitHub | Video Link |",
         "|------|------|------------------|----------------|---------|----------|",
     ]
 
     for i, entry in enumerate(sorted_entries, start=1):
-        md.append(
-            f"| {i} | [{entry['name']}]({entry['github']}) | "
+        leaderboard_lines.append(
+            f"| {i} | {entry['name']} | "
             f"{entry['minimum_dist_meters']} | {entry['time_s']} | "
             f"[repo]({entry['github']}) | [video]({entry['video']}) |"
         )
 
-    LEADERBOARD_PATH.write_text("\n".join(md) + "\n")
+    leaderboard_lines.append("")
+    leaderboard_lines.append(END_MARKER)
+    leaderboard_text = "\n".join(leaderboard_lines)
+
+    # Read existing README
+    text = README_PATH.read_text()
+
+    # Replace leaderboard section
+    if START_MARKER not in text or END_MARKER not in text:
+        print(f"README.md must contain '{START_MARKER}' and '{END_MARKER}' markers.")
+        sys.exit(1)
+
+    updated_text = re.sub(
+        f"{START_MARKER}.*?{END_MARKER}", leaderboard_text, text, flags=re.DOTALL
+    )
+
+    README_PATH.write_text(updated_text)
     print(f"Leaderboard updated with {len(sorted_entries)} unique participants.")
 
 
