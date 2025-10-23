@@ -40,3 +40,15 @@ Avoid all walls.
 1. Follow the [project instructions](docs/project-instructions.md) to complete your project.
 2. After successfully getting Mr. Maeser his goods, [submit your results to the leaderboard](docs/leaderboard-instructions.md).
 
+## Leaderboard
+Ranked list of successful solutions.
+Solutions are ranked by
+\[
+  \text{"Minimum Distance From Walls"} / \text{"Time"}
+\]
+
+This means that a large minimum distance and a small time will result in a higher score.
+
+<!-- LEADERBOARD:START -->
+<!-- The leaderboard below is automatically generated. Do not edit manually. -->
+<!-- LEADERBOARD:END -->
