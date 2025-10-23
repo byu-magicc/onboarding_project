@@ -40,3 +40,16 @@ Avoid all walls.
 1. Follow the [project instructions](docs/project-instructions.md) to complete your project.
 2. After successfully getting Mr. Maeser his goods, [submit your results to the leaderboard](docs/leaderboard-instructions.md).
 
+## Leaderboard
+Ranked list of successful solutions.
+Solutions are ranked by $\frac{\text{Minimum Distance From Walls}}{\text{Time}}$
+
+This means that a large minimum distance and a small time will result in a higher score.
+
+<!-- LEADERBOARD:START -->
+<!-- The leaderboard below is automatically generated. Do not edit manually. -->
+| Rank | Name | Minimum distance from walls (m) | Best time (s) | GitHub | Video Link |
+|------|------|------------------|----------------|---------|----------|
+| 1 | Cosmo | 2.0 | 177.2 | [repo](https://github.com/byu-magicc/onboarding_project) | [video](https://youtube.com) |
+
+<!-- LEADERBOARD:END -->

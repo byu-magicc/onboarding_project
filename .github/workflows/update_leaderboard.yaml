@@ -1,0 +1,39 @@
+name: Update Leaderboard
+
+on:
+  push:
+    paths:
+      - "docs/leaderboard_results.json"
+  pull_request:
+    paths:
+      - "docs/leaderboard_results.json"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install --upgrade pip
+
+      - name: Generate leaderboard
+        run: python3 docs/generate_leaderboard.py
+
+      - name: Commit and push if changed
+        run: |
+          if ! git diff --quiet README.md; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add README.md
+            git commit -m "Auto-update leaderboard"
+            git push
+          else
+            echo "No changes to commit"
+          fi
