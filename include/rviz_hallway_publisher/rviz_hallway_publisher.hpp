@@ -33,6 +33,7 @@ private:
   visualization_msgs::msg::Marker create_default_hallway();
   void add_back_wall();
   void publish_model();
+  void publish_finish_area();
   Eigen::Vector2d move_second_up_or_down(Eigen::Vector2d line_dir, Eigen::Vector2d normal, double width);
 };
 

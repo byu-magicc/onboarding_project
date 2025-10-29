@@ -2,7 +2,7 @@
 
 namespace onboarding_project {
 
-RvizPublisher::RvizPublisher() 
+RvizPublisher::RvizPublisher()
   : Node("rviz_hallway_publisher")
   , qos_transient_local_20_(20)
 {
@@ -16,6 +16,7 @@ RvizPublisher::RvizPublisher()
 
   create_and_publish_hallway();
   publish_model();
+  // publish_finish_area(); // This is an optional addition to the map, which shows the target area
 }
 
 void RvizPublisher::declare_parameters() {
@@ -24,7 +25,7 @@ void RvizPublisher::declare_parameters() {
   this->declare_parameter("hallway_width", 10.0);
   this->declare_parameter("hallway_height", 10.0);
   this->declare_parameter("wall_width", 2.0);
-  this->declare_parameter("hallway_waypoints_x", std::vector<double>{2.0, 20.0, 20.0, 80.0, 80.0, 60.0});
+  this->declare_parameter("hallway_waypoints_x", std::vector<double>{-1.0, 20.0, 20.0, 80.0, 80.0, 60.0});
   this->declare_parameter("hallway_waypoints_y", std::vector<double>{0.0, 0.0, -20.0, -20.0, -60.0, -60.0});
   this->declare_parameter("hallway_waypoints_z", std::vector<double>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
   this->declare_parameter("model_file", "resource/maeserstatue_small.stl");
@@ -204,6 +205,33 @@ void RvizPublisher::publish_model() {
   model.color.b = 0.67f;
   model.color.a = 1.0;
   hallway_pub_->publish(model);
+}
+
+void RvizPublisher::publish_finish_area() {
+  std::vector<double> xs = this->get_parameter("hallway_waypoints_x").as_double_array();
+  std::vector<double> ys = this->get_parameter("hallway_waypoints_y").as_double_array();
+  std::vector<double> zs = this->get_parameter("hallway_waypoints_z").as_double_array();
+  visualization_msgs::msg::Marker area;
+  area.header.frame_id = "world";
+  area.id = 100;
+  area.ns = "area";
+  area.type = visualization_msgs::msg::Marker::CUBE;
+  area.action = visualization_msgs::msg::Marker::ADD;
+  area.pose.position.x = xs.back() + 2.5;
+  area.pose.position.y = ys.back();
+  area.pose.position.z = zs.back() + 1.0;
+  area.pose.orientation.x = 0.0;
+  area.pose.orientation.y = 0.0;
+  area.pose.orientation.z = 0.0;
+  area.pose.orientation.w = 1.0;
+  area.color.r = 1.0;
+  area.color.g = 0.0;
+  area.color.b = 0.0;
+  area.color.a = 0.4;
+  area.scale.x = 10.0;
+  area.scale.y = 10.0;
+  area.scale.z = 2.0;
+  hallway_pub_->publish(area);
 }
 
 } // namespace onboarding_project
