@@ -52,6 +52,8 @@ class WallsSensor(Node):
 
     def calc_walls_dist(self, position):
 
+        collision_detected = False
+
         x = position.x
         y = position.y
         z = position.z
@@ -66,8 +68,12 @@ class WallsSensor(Node):
                 ds = x - (w.position.x + w.dimensions.x / 2) - drone_cylinder_radius
                 if dn > 0:
                     dist_north = min(dist_north, dn)
+                elif dn + drone_cylinder_radius > 0:
+                    collision_detected = True
                 if ds > 0:
                     dist_south = min(dist_south, ds)
+                elif ds + drone_cylinder_radius > 0:
+                    collision_detected = True
 
             # If wall in line of sight e/w
             if (abs(x - w.position.x) < (w.dimensions.x / 2)): # Infinite wall height
@@ -76,31 +82,53 @@ class WallsSensor(Node):
                 dw = y - (w.position.y + w.dimensions.y / 2) - drone_cylinder_radius
                 if de > 0:
                     dist_east = min(dist_east, de)
+                elif de + drone_cylinder_radius > 0:
+                    collision_detected = True
                 if dw > 0:
                     dist_west = min(dist_west, dw)
+                elif dw + drone_cylinder_radius > 0:
+                    collision_detected = True
 
         nesw = np.array([dist_north, dist_east, dist_south, dist_west], dtype=np.float32).tolist()
 
-        if not self.begun:
-            self.get_logger().info('You must be near (0, 0) to begin timing.')
-            self.begun = self.check_if_near_zero(x, y)
+        # If in a trial
         if self.begun and not self.finished:
-            self.min_distance.append([self.calc_time_passed(), min(nesw)])
-            if self.check_if_reached_karl(position):
-                self.run_finished_condition()
+            if collision_detected:
+                self.run_wall_collision_condition()
+            else:
+                self.min_distance.append([self.calc_time_passed(), min(nesw)])
+                if self.check_if_reached_karl(position):
+                    self.run_finished_condition()
+        # If waiting to begin
+        elif not self.begun:
+            if self.check_if_near_zero(x, y):
+                self.run_begin_condition()
+            else:
+                self.get_logger().info('You must be near (0, 0) to begin timing.')
+
         return nesw
 
-    def check_if_near_zero(self, x, y):
-        close_threshold = 5.
+    def check_if_near_zero(self, x, y, close_threshold=5.):
         return np.linalg.norm([x, y]) < close_threshold
 
-    def run_finished_condition(self):
+    def run_begin_condition(self):
+        self.begun = True
+        self.init_time = self.clock.now()
+        self.min_distance = []
+        self.finished = False
+
+    def run_finished_condition(self, success=True):
         self.finished = True
         self.elapsed_time = self.calc_time_passed()
-        self.get_logger().info(f'Karl has received the chalkolate milk in {self.elapsed_time} seconds!')
+        if success:
+            self.get_logger().info(f'Karl has received the chalkolate milk in {self.elapsed_time} seconds!')
         self.destroy_subscription(self.truth_state_sub)
         min_distance_array = np.array(self.min_distance)
         self.plot_distance_to_walls(min_distance_array)
+
+    def run_wall_collision_condition(self):
+        self.get_logger().info('Mission failed! Hit a wall!')
+        self.run_finished_condition(success=False) # This is a temporary way to end the simulation. Eventually, I want it to reset when the drone goes back to the start.
 
     def calc_time_passed(self):
         elapsed_time = self.clock.now() - self.init_time
