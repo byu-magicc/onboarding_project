@@ -25,7 +25,7 @@ void RvizPublisher::declare_parameters() {
   this->declare_parameter("hallway_width", 10.0);
   this->declare_parameter("hallway_height", 10.0);
   this->declare_parameter("wall_width", 2.0);
-  this->declare_parameter("hallway_waypoints_x", std::vector<double>{-1.0, 20.0, 20.0, 80.0, 80.0, 60.0});
+  this->declare_parameter("hallway_waypoints_x", std::vector<double>{-3.0, 20.0, 20.0, 80.0, 80.0, 60.0});
   this->declare_parameter("hallway_waypoints_y", std::vector<double>{0.0, 0.0, -20.0, -20.0, -60.0, -60.0});
   this->declare_parameter("hallway_waypoints_z", std::vector<double>{0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
   this->declare_parameter("model_file", "resource/maeserstatue_small.stl");
