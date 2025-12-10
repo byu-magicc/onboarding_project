@@ -120,10 +120,11 @@ class WallsSensor(Node):
     def run_finished_condition(self, success=True):
         self.finished = True
         self.elapsed_time = self.calc_time_passed()
-        if success:
-            self.get_logger().info(f'Karl has received the chalkolate milk in {self.elapsed_time} seconds!')
         self.destroy_subscription(self.truth_state_sub)
         min_distance_array = np.array(self.min_distance)
+        if success:
+            self.get_logger().info(f'Karl has received the chalkolate milk in {self.elapsed_time} seconds!')
+            self.get_logger().info(f'Minimum distance to walls: {min(min_distance_array[:, 1])}')
         self.plot_distance_to_walls(min_distance_array)
 
     def run_wall_collision_condition(self):
