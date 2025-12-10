@@ -30,6 +30,10 @@ install(
   DIRECTORY resource
   DESTINATION share/${PROJECT_NAME})
 
+install(
+  DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
+
 install(PROGRAMS
   scripts/walls_sensor.py
   DESTINATION lib/${PROJECT_NAME})
