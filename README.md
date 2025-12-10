@@ -50,6 +50,6 @@ This means that a large minimum distance and a small time will result in a highe
 <!-- The leaderboard below is automatically generated. Do not edit manually. -->
 | Rank | Name | Minimum distance from walls (m) | Best time (s) | GitHub | Video Link |
 |------|------|------------------|----------------|---------|----------|
-| 1 | Cosmo | 2.0 | 177.2 | [repo](https://github.com/byu-magicc/onboarding_project) | [video](https://youtube.com) |
+| 1 | Cosmo | 2.5 | 44.5 | [repo](https://github.com/byu-magicc/onboarding_project) | [video](https://youtu.be/GJZMzQYB5zI) |
 
 <!-- LEADERBOARD:END -->
