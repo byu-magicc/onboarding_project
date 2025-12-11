@@ -18,10 +18,13 @@ The purpose of this project is to be a fun ~2-week project that prospective stud
 * Have fun!
 
 ## Project Assignment
+
+![Image of the maze to solve](docs/assets/maze.png)
+
 Mr. Karl Maeser has unfortunately found himself stuck inside a chalk circle, and hasn't been able to find any BYU Creamery chocolate milk for days!
 He is located at the end of a hallway, unable to move.
 
-Luckily, you happen to have a quadrotor that just happens to have a case of BYU Creamery chocolate milk already loaded up!
+Luckily, you happen to have a quadrotor that just happens to have a case of BYU Creamery chocolate milk already loaded up.
 Your assignment is to deliver the goods to Mr. Maeser as quick as you can.
 But watch out!
 Hit any walls and your quadrotor will crash (not shown)!
