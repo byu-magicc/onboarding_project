@@ -5,6 +5,10 @@ This repository contains project files for the MAGICC Lab onboarding project.
 ## Purpose
 The purpose of this project is to be a fun ~2-week project that prospective students and volunteers can do to understand more about the tools we use in the MAGICC lab.
 
+> [!NOTE]
+> The ~2-week statistic is our estimate of how long it would take someone who knew nothing about the lab and had some coding experience, if they were to spend 10hrs/week working on it.
+> If you can't spend 10hrs/week on the project, expect that it will probably take a bit longer.
+
 ### Expected outcomes
 
 * Gain exposure to 
@@ -16,6 +20,13 @@ The purpose of this project is to be a fun ~2-week project that prospective stud
 * Set up ROSflight on your computer
 * Write your own ROS 2 node that controls a simulated multirotor
 * Have fun!
+
+> [!NOTE]
+> [ROSflight](https://docs.rosflight.org) is an autopilot built from scratch here in the MAGICC lab.
+> It is designed to be understandable, making it a good place for people to learn about drones, controls, and autopilots in general.
+>
+> Throughout this project, you will set up the ROSflight autopilot and a simulator on your computer.
+> You'll then have the chance to write your own program that controls a multirotor in sim!
 
 ## Project Assignment
 
