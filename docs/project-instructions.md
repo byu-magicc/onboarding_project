@@ -114,6 +114,11 @@ Everything else you need (the simulator, ROSflight, ROScopter) was already insta
 
 ### 2.2 Write Your Navigation Node
 
+> !TIP
+> If this is your first time writing a ROS2 node, we **strongly recommend** the tutorials for [writing a Python ROS2 node]() or [writing a C++ ROS2 node](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html).
+>
+> Note that you may want to visit more of [the ROS2 tutorials](https://docs.ros.org/en/jazzy/Tutorials.html). They will come in handy in this phase of the project.
+
 Your simulated quadrotor is equipped with four laser range sensors that measure distances to the nearest walls in each cardinal direction.
 
 **Sensor Information:**
