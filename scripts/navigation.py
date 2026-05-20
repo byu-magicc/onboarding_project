@@ -26,22 +26,17 @@ class Navigation(Node):
         self.next_east = 0.0
         self.axis = 'east'
 
-        self.Wall_sense_sub = self.create_subscription(
+        self.Wall_sense_sub = self.create_subscription( # subscribe to wall sensors
             Float32MultiArray,
             'sensors/walls_sensor',
             self.sensor_callback,
             10)
-        self.state_sub = self.create_subscription(
+        self.state_sub = self.create_subscription(      # subscribe to estimator
             State,
             'estimated_state',
             self.state_callback,
             10)
-        #self.path_plan_waypoints_sub = self.create_subscription(
-        #    Waypoint,
-        #    'waypoints',
-        #    self.waypoints_callback,
-        #    10)
-        self.add_waypoint_client = self.create_client(
+        self.add_waypoint_client = self.create_client(  # create client for AddWaypoint service
             AddWaypoint,
             'path_planner/add_waypoint')
         while not self.add_waypoint_client.wait_for_service(timeout_sec=1.0):
@@ -52,23 +47,24 @@ class Navigation(Node):
         self.dist_north = msg.data[0]
         self.dist_south = msg.data[2]
         self.dist_west = msg.data[3]
-        self.get_logger().info(
-            'Wall Distance: N: %.2f E: %.2f S: %.2f W: %.2f' %
-            (self.dist_north, self.dist_east, self.dist_south, self.dist_west)
-        )
+        #self.get_logger().info(    # uncomment to see live sensor data
+        #    'Wall Distance: N: %.2f E: %.2f S: %.2f W: %.2f' %
+        #    (self.dist_north, self.dist_east, self.dist_south, self.dist_west)
+        #)
 
     def calculate_waypoint(self):
-        while (self.dist_north == 0.0):
+        while (self.dist_north == 0.0): # Make sure sensors are loaded in
             time.sleep(1)
             self.get_logger().info('Waiting for wall sensors...')
             return
+        # if looking for a n/s direction, find the furthest non-infinite wall and set a waypoint 4m away
         if (self.axis != 'north'):
             if ((self.dist_north > self.dist_south) or (self.dist_south > 9999)):
                 n_pos = self.curr_north + self.dist_north - 4.0
             else: n_pos = self.curr_north - self.dist_south + 4.0
             self.axis = 'north'
             e_pos = self.curr_east
-        elif (self.axis != 'east'):
+        elif (self.axis != 'east'): # if looking for a e/w direction set waypoint
             if ((self.dist_east > self.dist_west) or (self.dist_west > 9999)):
                 e_pos = self.curr_east + self.dist_east - 4.0
             else: e_pos = self.curr_east - self.dist_west + 4.0
@@ -97,7 +93,7 @@ class Navigation(Node):
         self.get_logger().info(f"Flying to: N: {self.next_north:.2f} E: {self.next_east:.2f}")
         self.add_waypoint_client.call_async(req)
 
-    def check_pos(self, dist_thresh):
+    def check_pos(self, dist_thresh):   # check if the next waypoint has been reached
         if ((self.curr_north < (self.next_north + dist_thresh)) and (self.curr_north > (self.next_north - dist_thresh))
             and (self.curr_east < (self.next_east + dist_thresh)) and (self.curr_east > (self.next_east - dist_thresh))):
             self.get_logger().info('Reached Waypoint')
@@ -111,9 +107,6 @@ class Navigation(Node):
             (self.curr_north, self.curr_east, self.curr_down)
         )
         self.check_pos(.5)
-
-    #def waypoints_callback(self, msg):
-    #    self.get_logger().info(str(msg))
 
 def main(args=None):
     rclpy.init(args=args)
