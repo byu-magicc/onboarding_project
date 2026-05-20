@@ -37,6 +37,10 @@ install(PROGRAMS
   scripts/walls_sensor.py
   DESTINATION lib/${PROJECT_NAME})
 
+install(PROGRAMS
+  scripts/navigation.py
+  DESTINATION lib/${PROJECT_NAME})
+
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
