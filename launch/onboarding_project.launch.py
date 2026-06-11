@@ -20,8 +20,21 @@ def generate_launch_description():
         output='screen',
     )
 
+    ai_navigation_node = Node(
+        package='onboarding_project',
+        executable='AINav.py',
+        name='AINav',
+    )
+    agent_node = Node(
+        package='ros2_deepagent',
+        executable='agent_node',
+        name='ai_agent',
+    )
+
     return LaunchDescription([
         walls_sensor_node,
         walls_publisher_node,
+        ai_navigation_node,
+        agent_node,
     ])
 

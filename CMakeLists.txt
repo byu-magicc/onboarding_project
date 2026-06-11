@@ -40,6 +40,14 @@ install(PROGRAMS
 install(PROGRAMS
   scripts/navigation.py
   DESTINATION lib/${PROJECT_NAME})
+  
+install(PROGRAMS
+  scripts/BTNav.py
+  DESTINATION lib/${PROJECT_NAME})
+  
+install(PROGRAMS
+  scripts/AINav.py
+  DESTINATION lib/${PROJECT_NAME})
 
 
 if(BUILD_TESTING)
