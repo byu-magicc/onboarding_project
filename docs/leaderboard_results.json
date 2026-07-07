@@ -1,7 +1,23 @@
-{
+[
+  {
+    "name": "Cosmo",
+    "minimum_dist_meters": 2.0,
+    "time_s": 177.2,
+    "github": "https://github.com/byu-magicc/onboarding_project",
+    "video": "https://youtube.com"
+  },
+  {
+    "name": "Cosmo",
+    "minimum_dist_meters": 2.5,
+    "time_s": 44.5,
+    "github": "https://github.com/byu-magicc/onboarding_project",
+    "video": "https://youtu.be/GJZMzQYB5zI"
+  },
+  {
     "name": "Ole Warndahl",
     "minimum_dist_meters": 2.83,
     "time_s": 26.7,
     "github": "https://github.com/warndahlo/onboarding_project",
     "video": "https://youtu.be/Z7cgAcRzzUU?si=VBFusDM3DtBzlxsN"
   }
+]
