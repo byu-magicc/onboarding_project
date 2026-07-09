@@ -19,5 +19,12 @@
     "time_s": 26.7,
     "github": "https://github.com/warndahlo/onboarding_project",
     "video": "https://youtu.be/Z7cgAcRzzUU?si=VBFusDM3DtBzlxsN"
+  },
+  {
+    "name": "Preston Nielson",
+    "minimum_dist_meters": 1.22,
+    "time_s": 143.2,
+    "github": "https://github.com/PrestonTNielson/Prestons_onboarding_project",
+    "video": "https://www.youtube.com/watch?v=EFsVFm7LLr0"
   }
 ]
