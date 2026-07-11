@@ -74,5 +74,6 @@ $$\text{Score} = \frac{\text{Minimum Distance From Walls (m)}}{\text{Time (s)}}$
 |------|------|------------------|----------------|---------|----------|
 | 1 | Ole Warndahl | 2.83 | 26.7 | [repo](https://github.com/warndahlo/onboarding_project) | [video](https://youtu.be/Z7cgAcRzzUU?si=VBFusDM3DtBzlxsN) |
 | 2 | Cosmo | 2.5 | 44.5 | [repo](https://github.com/byu-magicc/onboarding_project) | [video](https://youtu.be/GJZMzQYB5zI) |
+| 3 | Preston Nielson | 1.22 | 143.2 | [repo](https://github.com/PrestonTNielson/Prestons_onboarding_project) | [video](https://www.youtube.com/watch?v=EFsVFm7LLr0) |
 
 <!-- LEADERBOARD:END -->
