@@ -82,7 +82,7 @@ class Navigation(Node):
         req = AddWaypoint.Request()
         wp_msg = Waypoint()
         wp_msg.type = 1
-        wp_msg.w = [self.next_north, self.next_east, -6.0]
+        wp_msg.w = [self.next_north, self.next_east, -10.0]
         wp_msg.psi = 0.0
         wp_msg.speed = 40.0
         wp_msg.clear_wp_list = False
