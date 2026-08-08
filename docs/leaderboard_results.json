@@ -26,5 +26,12 @@
     "time_s": 143.2,
     "github": "https://github.com/PrestonTNielson/Prestons_onboarding_project",
     "video": "https://www.youtube.com/watch?v=EFsVFm7LLr0"
+  },
+  {
+    "name": "Oihzac",
+    "minimum_dist_meters": 2.30,
+    "time_s": 55.0,
+    "github": "https://github.com/Oihzac/onboarding_project",
+    "video": "https://youtu.be/nciE9TyrIzU"
   }
 ]
