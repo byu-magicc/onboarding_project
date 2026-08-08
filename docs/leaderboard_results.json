@@ -12,5 +12,26 @@
     "time_s": 44.5,
     "github": "https://github.com/byu-magicc/onboarding_project",
     "video": "https://youtu.be/GJZMzQYB5zI"
+  },
+  {
+    "name": "Ole Warndahl",
+    "minimum_dist_meters": 2.83,
+    "time_s": 26.7,
+    "github": "https://github.com/warndahlo/onboarding_project",
+    "video": "https://youtu.be/Z7cgAcRzzUU?si=VBFusDM3DtBzlxsN"
+  },
+  {
+    "name": "Preston Nielson",
+    "minimum_dist_meters": 1.22,
+    "time_s": 143.2,
+    "github": "https://github.com/PrestonTNielson/Prestons_onboarding_project",
+    "video": "https://www.youtube.com/watch?v=EFsVFm7LLr0"
+  },
+  {
+    "name": "Andrew Faucette",
+    "minimum_dist_meters": 2.92,
+    "time_s": 26.6,
+    "github": "https://github.com/AndrewFaucette/rosflight_onboarding_project.git",
+    "video": "https://youtu.be/vrtuvm02nmI"
   }
 ]
